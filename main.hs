@@ -1,3 +1,5 @@
+import List (nubBy)
+
 type Slot  = Maybe Int
 type Row   = [Slot]
 type Board = [Row]
@@ -36,3 +38,11 @@ rowToString row = strip $ foldl (++) "" $ zipWith (++) (map (slotToString) row) 
 slotToString :: Slot -> String
 slotToString Nothing  = "_"
 slotToString (Just x) = show x
+
+rowIsValid :: Row -> Bool
+rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
+                 where rowWithoutNothing = filter (/= Nothing) row
+                       rowWithoutDups    = List.nubBy (==) rowWithoutNothing
+
+columnToRow :: Int -> Board -> Row
+columnToRow i = map (!! i)
