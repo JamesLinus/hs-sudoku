@@ -43,12 +43,7 @@ slotToString :: Slot -> String
 slotToString Nothing  = "_"
 slotToString (Just x) = show x
 
--- Can we assume no duplicate numbers in a row?
--- rowIsValid :: Row -> Bool
--- rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
---                  where rowWithoutNothing = filter (/= Nothing) row
---                        rowWithoutDups    = List.nubBy (==) rowWithoutNothing
--- If we can, then this will suffice
+-- We assume no duplicate numbers in a row
 rowIsValid :: Row -> Bool
 rowIsValid row = (length $ withoutBlanks row) == (length row)
 
@@ -68,6 +63,9 @@ flatten :: [[a]] -> [a]
 flatten []     = []
 flatten (x:xs) = x ++ (flatten xs)
 
+
+slotAt x y board =  board !! y !! x
+
 rowAt :: Int -> Int -> Board -> Row
 rowAt x y = (!! y)
 
@@ -80,4 +78,10 @@ squareAt x y = squareToRow (x `div` 3) (y `div` 3)
 possibleValuesFor :: Int -> Int -> Board -> Row
 possibleValuesFor x y board = (map (Just) [1..9]) List.\\ usedValues
                               where usedValues = withoutBlanks $ flatten $ map (\f -> f x y board) [(rowAt), (columnAt), (squareAt)]
+
+blankSlots :: Board -> [(Int, Int)]
+blankSlots board = filter (slotIsBlank) coords
+                   where coords = [(x,y) | y <- [0..8], x <- [0..8]]
+                         slotIsBlank (x, y) = slotAt x y board == Nothing
+
 
