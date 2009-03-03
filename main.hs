@@ -15,6 +15,9 @@ type Board = [Row]
 emptyBoard :: Board
 emptyBoard = [[Nothing | x <- [1..9]] | x <- [1..9]]
 
+badBoard :: Board
+badBoard = [[Just (x + y) | x <- [1..9]] | y <- [8,7..0]]
+
 parseBoard :: String -> Board
 parseBoard = map (parseRow) . filter ((/= '-') . head) . lines
 
@@ -46,3 +49,13 @@ rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
 
 columnToRow :: Int -> Board -> Row
 columnToRow i = map (!! i)
+
+squareToRow :: Int -> Int -> Board -> Row
+squareToRow 0 0 board = flatten $ take 3 $ map (take 3) board
+squareToRow x 0 board = squareToRow (x-1) 0  $ map (tail . tail . tail) board
+squareToRow x y board = squareToRow x (y-1) $ (tail . tail . tail) board
+
+flatten :: [[a]] -> [a]
+flatten []     = []
+flatten (x:xs) = x ++ (flatten xs)
+
