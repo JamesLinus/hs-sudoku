@@ -1,4 +1,4 @@
-import List (nubBy)
+import List (nubBy, (\\))
 
 type Slot  = Maybe Int
 type Row   = [Slot]
@@ -28,6 +28,7 @@ parseSlot :: String -> Slot
 parseSlot "_" = Nothing
 parseSlot str = Just (read str :: Int)
 
+-- Refactor using 'intersperse'
 boardToString :: Board -> String
 boardToString board = strip $ zipWith (++) (map (rowToString) board) others
                  where others = cycle ["", "", "\n- - - + - - - + - - -"]
@@ -42,20 +43,41 @@ slotToString :: Slot -> String
 slotToString Nothing  = "_"
 slotToString (Just x) = show x
 
+-- Can we assume no duplicate numbers in a row?
+-- rowIsValid :: Row -> Bool
+-- rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
+--                  where rowWithoutNothing = filter (/= Nothing) row
+--                        rowWithoutDups    = List.nubBy (==) rowWithoutNothing
+-- If we can, then this will suffice
 rowIsValid :: Row -> Bool
-rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
-                 where rowWithoutNothing = filter (/= Nothing) row
-                       rowWithoutDups    = List.nubBy (==) rowWithoutNothing
+rowIsValid row = (length $ withoutBlanks row) == (length row)
 
+withoutBlanks :: Row -> Row
+withoutBlanks = filter (/= Nothing)
+
+-- Could also be done using '(!! i) . transpose'
 columnToRow :: Int -> Board -> Row
 columnToRow i = map (!! i)
 
 squareToRow :: Int -> Int -> Board -> Row
-squareToRow 0 0 board = flatten $ take 3 $ map (take 3) board
-squareToRow x 0 board = squareToRow (x-1) 0  $ map (tail . tail . tail) board
-squareToRow x y board = squareToRow x (y-1) $ (tail . tail . tail) board
+squareToRow 0 0 = flatten . take 3 . map (take 3)
+squareToRow x 0 = squareToRow (x-1) 0 . map (tail . tail . tail)
+squareToRow x y = squareToRow x (y-1) . (tail . tail . tail)
 
 flatten :: [[a]] -> [a]
 flatten []     = []
 flatten (x:xs) = x ++ (flatten xs)
+
+rowAt :: Int -> Int -> Board -> Row
+rowAt x y = (!! y)
+
+columnAt :: Int -> Int -> Board -> Row
+columnAt x y = columnToRow x
+
+squareAt :: Int -> Int -> Board -> Row
+squareAt x y = squareToRow (x `div` 3) (y `div` 3)
+
+possibleValuesFor :: Int -> Int -> Board -> Row
+possibleValuesFor x y board = (map (Just) [1..9]) List.\\ usedValues
+                              where usedValues = withoutBlanks $ flatten $ map (\f -> f x y board) [(rowAt), (columnAt), (squareAt)]
 
