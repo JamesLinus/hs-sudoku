@@ -1,4 +1,4 @@
-import List (nubBy, (\\))
+import List (find, (\\), nubBy)
 
 type Slot  = Maybe Int
 type Row   = [Slot]
@@ -43,9 +43,19 @@ slotToString :: Slot -> String
 slotToString Nothing  = "_"
 slotToString (Just x) = show x
 
+-- Officially cant think anymore. Too late. Going to sleep.
+isSolved :: Board -> Bool
+isSolved board = and $ map (rowIsValid . (!!) board) [0..8]
+
+hasBlank :: Board -> Bool
+hasBlank = any (== Nothing) . flatten
+
 -- We assume no duplicate numbers in a row
 rowIsValid :: Row -> Bool
-rowIsValid row = (length $ withoutBlanks row) == (length row)
+rowIsValid row = (length rowWithoutNothing) == (length rowWithoutDups)
+                 where rowWithoutNothing = filter (/= Nothing) row
+                       rowWithoutDups    = List.nubBy (==) rowWithoutNothing
+
 
 withoutBlanks :: Row -> Row
 withoutBlanks = filter (/= Nothing)
