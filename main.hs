@@ -63,8 +63,7 @@ flatten :: [[a]] -> [a]
 flatten []     = []
 flatten (x:xs) = x ++ (flatten xs)
 
-
-slotAt x y board =  board !! y !! x
+slotAt x y board = board !! y !! x
 
 rowAt :: Int -> Int -> Board -> Row
 rowAt x y = (!! y)
