@@ -18,6 +18,11 @@ emptyBoard = [[Nothing | x <- [1..9]] | x <- [1..9]]
 badBoard :: Board
 badBoard = [[Just (x + y) | x <- [1..9]] | y <- [8,7..0]]
 
+goodBoard :: Board
+goodBoard = parseBoard "7 9 _ | _ _ _ | 3 _ _\n_ _ _ | _ _ 6 | 9 _ _\n8 _ _ | _ 3 _ | _ 7 6\n------+-------+------\n_ _ _ | _ _ 5 | _ _ 2\n_ _ 5 | 4 1 8 | 7 _ _\n4 _ _ | 7 _ _ | _ _ _\n------+-------+------\n6 1 _ | _ 9 _ | _ _ 8\n_ _ 2 | 3 _ _ | _ _ _\n_ _ 9 | _ _ _ | _ 5 4"
+
+
+
 parseBoard :: String -> Board
 parseBoard = map (parseRow) . filter ((/= '-') . head) . lines
 
@@ -31,7 +36,7 @@ parseSlot str = Just (read str :: Int)
 -- Refactor using 'intersperse'
 boardToString :: Board -> String
 boardToString board = strip $ zipWith (++) (map (rowToString) board) others
-                 where others = cycle ["", "", "\n- - - + - - - + - - -"]
+                 where others = cycle ["", "", "\n------+-------+------"]
                        strip  = unlines . init . lines . unlines
 
 rowToString :: Row -> String
@@ -42,6 +47,8 @@ rowToString row = strip $ foldl (++) "" $ zipWith (++) (map (slotToString) row) 
 slotToString :: Slot -> String
 slotToString Nothing  = "_"
 slotToString (Just x) = show x
+
+-- To solve, can we make a pass over the board and collect all of the possible values in a spot. Many spots will only allow one element, at which point we change the board
 
 -- Officially cant think anymore. Too late. Going to sleep.
 isSolved :: Board -> Bool
@@ -92,5 +99,50 @@ blankSlots :: Board -> [(Int, Int)]
 blankSlots board = filter (slotIsBlank) coords
                    where coords = [(x,y) | y <- [0..8], x <- [0..8]]
                          slotIsBlank (x, y) = slotAt x y board == Nothing
+
+allPossibleValuesFor :: Board -> [((Int, Int), Row)]
+allPossibleValuesFor board = map (\(x,y) -> ((x,y), possibleValuesFor x y board)) $  blankSlots board 
+
+placesWithOnePossibleValue :: Board -> [((Int, Int), Slot)]
+placesWithOnePossibleValue = map (\(coords, (x:xs)) -> (coords, x)) . filter (\(_, possibilities) -> length possibilities == 1) . allPossibleValuesFor
+
+makeMoves :: [((Int, Int), Slot)] -> Board -> Board
+makeMoves [] board = if newMoves == [] then board else makeMoves newMoves board
+                     where newMoves = placesWithOnePossibleValue board
+makeMoves (((x,y), num):xs) board = makeMoves (xs ++ placesWithOnePossibleValue newBoard) newBoard
+                                    where newBoard = (insertInMatrix x y num board)
+
+insertAt x i xs = ys ++ [x] ++ zs
+                  where (ys,z:zs) = splitAt i xs
+
+insertInMatrix x y newValue board = insertAt (insertAt newValue x (board !! y)) y board
+
+
+
+
+-- Finds all the places that this value could go in the specified block=
+possiblePlacesFor :: Int -> Int -> Slot -> Board -> [((Int, Int), Row)]
+possiblePlacesFor x y value board =
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
